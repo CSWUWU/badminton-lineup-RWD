@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>早安美之程</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --milk-tea-bg: #f3e8dc;
+      --milk-tea-brown: #b08968;
+      --milk-tea-dark: #7f5539;
+      --milk-tea-light: #ede0d4;
+      --milk-tea-accent: #d6ccc2;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: var(--milk-tea-bg);
+      color: var(--milk-tea-dark);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--milk-tea-dark);
+    }
+
+    #controls {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #newPlayer {
+      padding: 6px 12px;
+      width: 200px;
+      border: 1px solid var(--milk-tea-brown);
+      border-radius: 5px;
+      background-color: var(--milk-tea-light);
+      color: var(--milk-tea-dark);
+    }
+
+    button {
+      padding: 6px 12px;
+      margin-left: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--milk-tea-brown);
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--milk-tea-dark);
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .area {
+      min-height: 250px;
+      background: var(--milk-tea-light);
+      border: 2px dashed var(--milk-tea-brown);
+      border-radius: 10px;
+      padding: 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .area h3 {
+      text-align: center;
+      margin: 0 0 8px;
+      color: var(--milk-tea-dark);
+    }
+
+    .player {
+      padding: 8px;
+      background: var(--milk-tea-accent);
+      border: 1px solid var(--milk-tea-brown);
+      border-radius: 5px;
+      margin: 5px 0;
+      text-align: center;
+      color: var(--milk-tea-dark);
+    }
+
+    .area-controls {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .timer {
+      position: absolute;
+      bottom: 5px;
+      right: 10px;
+      font-size: 12px;
+      color: var(--milk-tea-dark);
+    }
+
+    @media (max-width: 768px) {
+      .grid-container {
+        display: flex;
+        flex-direction: column;
+      }
+      .area {
+        min-height: 200px;
+      }
+      #bench {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>早安美之程</h1>
+  <div id="controls">
+    <input type="text" id="newPlayer" placeholder="輸入隊員名稱" />
+    <button onclick="addPlayer()">新增隊員</button>
+    <button onclick="resetLayout()">重置</button>
+  </div>
+
+  <div class="grid-container">
+    <div class="area" id="bench"><h3>休息區</h3></div>
+
+    <div class="area" id="court1">
+      <h3>場地 1</h3>
+      <div class="area-controls">
+        <button onclick="endMatch('court1')">結束比賽</button>
+      </div>
+      <div class="timer" id="timer-court1"></div>
+    </div>
+    <div class="area" id="court2">
+      <h3>場地 2</h3>
+      <div class="area-controls">
+        <button onclick="endMatch('court2')">結束比賽</button>
+      </div>
+      <div class="timer" id="timer-court2"></div>
+    </div>
+    <div class="area" id="court3">
+      <h3>場地 3</h3>
+      <div class="area-controls">
+        <button onclick="endMatch('court3')">結束比賽</button>
+      </div>
+      <div class="timer" id="timer-court3"></div>
+    </div>
+
+    <div class="area" id="waitingA"><h3>等待順位 1</h3></div>
+    <div class="area" id="waitingB"><h3>等待順位 2</h3></div>
+    <div class="area" id="waitingC"><h3>等待順位 3</h3></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script>
+    const maxPlayersPerArea = 4;
+    const timers = {};
+    const timerIntervals = {};
+    const areaIds = ['bench', 'court1', 'court2', 'court3', 'waitingA', 'waitingB', 'waitingC'];
+
+    areaIds.forEach(id => {
+      Sortable.create(document.getElementById(id), {
+        group: 'players',
+        animation: 150,
+        onAdd: evt => {
+          const to = evt.to;
+          if (to.querySelectorAll('.player').length > maxPlayersPerArea) {
+            evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+            alert("此區最多只能容納4人");
+          }
+        }
+      });
+    });
+
+    function addPlayer() {
+      const name = document.getElementById('newPlayer').value.trim();
+      if (name) {
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.textContent = name;
+        document.getElementById('bench').appendChild(player);
+        document.getElementById('newPlayer').value = '';
+      }
+    }
+
+    function endMatch(courtId) {
+      const court = document.getElementById(courtId);
+      const bench = document.getElementById('bench');
+      const waitingA = document.getElementById('waitingA');
+      const waitingB = document.getElementById('waitingB');
+      const waitingC = document.getElementById('waitingC');
+
+      [...court.querySelectorAll('.player')].forEach(p => bench.appendChild(p));
+      [...waitingA.querySelectorAll('.player')].forEach(p => court.appendChild(p));
+      startTimer(courtId);
+      [...waitingB.querySelectorAll('.player')].forEach(p => waitingA.appendChild(p));
+      [...waitingC.querySelectorAll('.player')].forEach(p => waitingB.appendChild(p));
+      waitingC.innerHTML = '<h3>等待順位 3</h3>';
+    }
+
+    function startTimer(courtId) {
+      stopTimer(courtId);
+      const timerDiv = document.getElementById(`timer-${courtId}`);
+      const startTime = Date.now();
+      timers[courtId] = startTime;
+      timerIntervals[courtId] = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - timers[courtId]) / 1000);
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        timerDiv.textContent = `上場時間：${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function stopTimer(courtId) {
+      if (timerIntervals[courtId]) {
+        clearInterval(timerIntervals[courtId]);
+        timerIntervals[courtId] = null;
+        document.getElementById(`timer-${courtId}`).textContent = '';
+      }
+    }
+
+    function resetLayout() {
+      areaIds.forEach(id => {
+        const area = document.getElementById(id);
+        if (id !== 'bench') area.innerHTML = `<h3>${area.querySelector('h3').textContent}</h3>`;
+      });
+      document.getElementById('bench').innerHTML = '<h3>休息區</h3>';
+    }
+  </script>
+</body>
+</html>
