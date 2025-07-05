@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>早安美之程</title>
+  <title>早安美之程🏸</title>
   <style>
     :root {
       --milk-tea-bg: #f3e8dc;
@@ -17,6 +17,10 @@
       padding: 20px;
       background-color: var(--milk-tea-bg);
       color: var(--milk-tea-dark);
+	  background-image: url('dogg.png');
+	  background-repeat: no-repeat;
+      background-size: auto 150px;  /* 高度固定 150px，寬度自動 */
+      background-position: center bottom;
     }
 
     h1 {
@@ -110,17 +114,20 @@
     }
 
     .player {
-	  padding: 8px;
-	  background: #f9f5f0;
-	  height: 19px;
-	  border: 1px solid var(--milk-tea-brown);
+      padding: 8px;
+      background: #f9f5f0;
+      height: 19px;
+      border: 1px solid var(--milk-tea-brown);
       border-radius: 12px;
-	  margin: 6.5px 0;
-	  text-align: center;
-	  color: var(--milk-tea-dark);
-	  font-size: 16px;
-	  font-weight: bold;
-	}
+      margin: 6.5px 0;
+      text-align: center;
+      color: var(--milk-tea-dark);
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
     .area-controls {
       text-align: center;
@@ -140,10 +147,17 @@
       color: var(--milk-tea-dark);
     }
 
+    .feedback {
+      text-align: center;
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--milk-tea-dark);
+    }
+
     .qr-wrapper {
-      position: fixed;
-      left: 50%;
-      bottom: 275px;
+      position: absolute;
+      left: 120px;
+      top: 8px;
       transform: translateX(-50%);
       width: 140px;
       background: #f9f5f0;
@@ -166,7 +180,7 @@
   </style>
 </head>
 <body>
-  <h1>早安美之程</h1>
+  <h1>早安美之程🏸</h1>
   <div id="controls">
     <input type="text" id="newPlayer" placeholder="輸入隊員名稱">
     <button onclick="addPlayer()">新增隊員</button>
@@ -185,6 +199,9 @@
   </div>
 
   <footer>Made by WU SIR</footer>
+  <div class="feedback">
+    若有問題或功能建議請填寫 <a href="https://forms.gle/gSby2fSQoqVLPoQJA" target="_blank">回報表單</a>。
+  </div>
 
   <!-- 📌 QR Code 動態產生區塊 -->
   <div class="qr-wrapper">
@@ -192,7 +209,6 @@
     <p>即時排隊狀態</p>
   </div>
 
-  <!-- 📌 引入 QRCode.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     new QRCode(document.getElementById("qrcode"), {
@@ -221,10 +237,10 @@
         animation: 150,
         onAdd: evt => {
           const to = evt.to;
-          if (to.querySelectorAll('.player').length > maxPlayersPerArea) {
-            evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
-            alert("此區最多只能容納4人");
-          }
+          if (to.id !== 'bench-zone' && to.querySelectorAll('.player').length > maxPlayersPerArea) {
+		  evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex]);
+		  alert("此區最多只能容納4人");
+		  }
         }
       });
     });
@@ -278,87 +294,78 @@
       areaIds.forEach(id => document.getElementById(id).innerHTML = '');
     }
   </script>
-  <!-- 以下是補上 Firebase 寫入與讀取功能的版本，整合到你的原始 HTML 中 -->
-<!-- ✨ 在 script 最後加入 Firebase SDK、初始化與即時同步邏輯 -->
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  <!-- Firebase 同步 -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/+esm";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA3ADLVmW_VVf-cyKnhBcpwNAoKPB3DJnI",
-    authDomain: "wusir-lineup.firebaseapp.com",
-    databaseURL: "https://wusir-lineup-default-rtdb.firebaseio.com",
-    projectId: "wusir-lineup",
-    storageBucket: "wusir-lineup.appspot.com",
-    messagingSenderId: "619285307932",
-    appId: "1:619285307932:web:4b344f1c91298089c875d9"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyA3ADLVmW_VVf-cyKnhBcpwNAoKPB3DJnI",
+      authDomain: "wusir-lineup.firebaseapp.com",
+      databaseURL: "https://wusir-lineup-default-rtdb.firebaseio.com",
+      projectId: "wusir-lineup",
+      storageBucket: "wusir-lineup.appspot.com",
+      messagingSenderId: "619285307932",
+      appId: "1:619285307932:web:4b344f1c91298089c875d9"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  const areaIds = [
-    'bench-zone', 'court1-zone', 'court2-zone', 'court3-zone',
-    'waitingA-zone', 'waitingB-zone', 'waitingC-zone'
-  ];
+    function syncToDB() {
+      areaIds.forEach(id => {
+        const players = Array.from(document.getElementById(id).querySelectorAll('.player')).map(p => p.textContent);
+        set(ref(db, id), players);
+      });
+    }
 
-  function syncToDB() {
+    function syncFromDB() {
+      areaIds.forEach(id => {
+        const zoneRef = ref(db, id);
+        onValue(zoneRef, snapshot => {
+          const zone = document.getElementById(id);
+          zone.innerHTML = '';
+          const data = snapshot.val();
+          if (data) {
+            data.forEach(name => {
+              const div = document.createElement('div');
+              div.className = 'player';
+              div.textContent = name;
+              zone.appendChild(div);
+            });
+          }
+        });
+      });
+    }
+
+    window.addPlayer = function () {
+      const name = document.getElementById('newPlayer').value.trim();
+      if (name) {
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.textContent = name;
+        document.getElementById('bench-zone').appendChild(player);
+        document.getElementById('newPlayer').value = '';
+        syncToDB();
+      }
+    };
+
+    window.resetLayout = function () {
+      areaIds.forEach(id => document.getElementById(id).innerHTML = '');
+      syncToDB();
+    };
+
     areaIds.forEach(id => {
-      const players = Array.from(document.getElementById(id).querySelectorAll('.player')).map(p => p.textContent);
-      set(ref(db, id), players);
-    });
-  }
-
-  function syncFromDB() {
-    areaIds.forEach(id => {
-      const zoneRef = ref(db, id);
-      onValue(zoneRef, snapshot => {
-        const zone = document.getElementById(id);
-        zone.innerHTML = '';
-        const data = snapshot.val();
-        if (data) {
-          data.forEach(name => {
-            const div = document.createElement('div');
-            div.className = 'player';
-            div.textContent = name;
-            zone.appendChild(div);
-          });
-        }
+      Sortable.create(document.getElementById(id), {
+        group: 'players',
+        animation: 150,
+        onEnd: () => syncToDB()
       });
     });
-  }
 
-  // 加入 Firebase 同步功能至原本的操作邏輯
-  window.addPlayer = function () {
-    const name = document.getElementById('newPlayer').value.trim();
-    if (name) {
-      const player = document.createElement('div');
-      player.className = 'player';
-      player.textContent = name;
-      document.getElementById('bench-zone').appendChild(player);
-      document.getElementById('newPlayer').value = '';
-      syncToDB();
-    }
-  };
-
-  window.resetLayout = function () {
-    areaIds.forEach(id => document.getElementById(id).innerHTML = '');
-    syncToDB();
-  };
-
-  // 為拖曳後同步加上 hook
-  import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/+esm";
-  areaIds.forEach(id => {
-    Sortable.create(document.getElementById(id), {
-      group: 'players',
-      animation: 150,
-      onEnd: () => syncToDB()
-    });
-  });
-
-  syncFromDB();
-</script>
-
+    syncFromDB();
+  </script>
 </body>
 </html>
