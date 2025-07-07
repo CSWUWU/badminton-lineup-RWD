@@ -67,14 +67,13 @@
     }
     .area-controls { text-align: center; margin-top: 5px; }
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
-    /* 刪除區置底、置中、小一點，顏色和場地一致 */
+    /* 刪除區固定右下角 */
     #deleteArea {
       position: fixed;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
-      width: 180px;
-      height: 100px;
+      right: 40px;
+      bottom: 40px;
+      width: 160px;
+      height: 56px;
       background: var(--milk-tea-light);
       border: 2px dashed var(--milk-tea-brown);
       color: var(--milk-tea-dark);
@@ -129,7 +128,7 @@
     <div class="area" id="waitingB"><h3>等待順位 2</h3><div class="player-zone" id="waitingB-zone"></div></div>
     <div class="area" id="waitingC"><h3>等待順位 3</h3><div class="player-zone" id="waitingC-zone"></div></div>
   </div>
-  <!-- 刪除區放在 grid-container 外面，置底 -->
+  <!-- 刪除區固定右下角 -->
   <div class="area" id="deleteArea">
     <h3><span style="font-size:18px;">🗑️</span> 刪除區</h3>
     <div class="player-zone" id="delete-zone"></div>
@@ -273,6 +272,30 @@
         }
       });
     });
+
+    // 重置必須5秒內連按5下
+    let resetClickCount = 0;
+    let resetClickTimer = null;
+    window.resetLayout = function () {
+      resetClickCount++;
+      if (resetClickCount === 1) {
+        resetClickTimer = setTimeout(() => {
+          resetClickCount = 0;
+        }, 5000);
+      }
+      if (resetClickCount >= 5) {
+        clearTimeout(resetClickTimer);
+        resetClickCount = 0;
+        areaIds.forEach(id => document.getElementById(id).innerHTML = '');
+        syncToDB();
+        alert("已重置！");
+      } else {
+        if (resetClickCount > 1) {
+          alert(`請在5秒內再按 ${5 - resetClickCount} 下，才會真的重置！`);
+        }
+      }
+    };
+
     window.addPlayer = function () {
       const name = document.getElementById('newPlayer').value.trim();
       if (name) {
@@ -283,10 +306,6 @@
         document.getElementById('newPlayer').value = '';
         syncToDB();
       }
-    };
-    window.resetLayout = function () {
-      areaIds.forEach(id => document.getElementById(id).innerHTML = '');
-      syncToDB();
     };
     window.endMatch = function (courtId) {
       const courtZone = document.getElementById(`${courtId}-zone`);
