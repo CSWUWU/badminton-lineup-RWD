@@ -70,10 +70,10 @@
     /* 刪除區固定右下角 */
     #deleteArea {
       position: absolute;
-      right: 40px;
-      bottom: 40px;
-      width: 200px;
-      height: 56px;
+      left: 108px;
+      bottom: 370px;
+      width: 240px;
+      height: 100px;
       background: var(--milk-tea-light);
       border: 2px dashed var(--milk-tea-brown);
       color: var(--milk-tea-dark);
@@ -273,7 +273,7 @@
       });
     });
 
-    // 重置必須5秒內連按5下
+    // 重置必須10秒內連按3下
     let resetClickCount = 0;
     let resetClickTimer = null;
     document.getElementById('resetBtn').addEventListener('click', function () {
@@ -281,7 +281,7 @@
       if (resetClickCount === 1) {
         resetClickTimer = setTimeout(() => {
           resetClickCount = 0;
-        }, 5000);
+        }, 10000); // 10秒
       }
       if (resetClickCount >= 3) {
         clearTimeout(resetClickTimer);
@@ -291,7 +291,7 @@
         alert("已重置！");
       } else {
         if (resetClickCount > 1) {
-          alert(`請在5秒內再按 ${5 - resetClickCount} 下，才會真的重置！`);
+          alert(`請在10秒內再按 ${3 - resetClickCount} 下，才會真的重置！`);
         }
       }
     });
