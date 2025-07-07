@@ -19,7 +19,7 @@
       background-image: url('dogg.png');
       background-repeat: no-repeat;
       background-size: auto 100px;
-      background-position: calc(50% + 220px) bottom;
+      background-position: calc(50% + 260px) bottom;
     }
     h1 { text-align: center; color: var(--milk-tea-dark); }
     #controls { text-align: center; margin: 20px 0; }
@@ -69,10 +69,10 @@
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
     /* 刪除區固定右下角 */
     #deleteArea {
-      position: fixed;
+      position: absolute;
       right: 40px;
       bottom: 40px;
-      width: 160px;
+      width: 200px;
       height: 56px;
       background: var(--milk-tea-light);
       border: 2px dashed var(--milk-tea-brown);
@@ -116,7 +116,7 @@
   <div id="controls">
     <input type="text" id="newPlayer" placeholder="輸入隊員名稱">
     <button onclick="addPlayer()">新增隊員</button>
-    <button onclick="resetLayout()">重置</button>
+    <button id="resetBtn">重置</button>
   </div>
   <div class="grid-container">
     <div class="area" id="bench"><h3>休息區</h3><div class="player-zone" id="bench-zone"></div></div>
@@ -276,14 +276,14 @@
     // 重置必須5秒內連按5下
     let resetClickCount = 0;
     let resetClickTimer = null;
-    window.resetLayout = function () {
+    document.getElementById('resetBtn').addEventListener('click', function () {
       resetClickCount++;
       if (resetClickCount === 1) {
         resetClickTimer = setTimeout(() => {
           resetClickCount = 0;
         }, 5000);
       }
-      if (resetClickCount >= 5) {
+      if (resetClickCount >= 3) {
         clearTimeout(resetClickTimer);
         resetClickCount = 0;
         areaIds.forEach(id => document.getElementById(id).innerHTML = '');
@@ -294,7 +294,7 @@
           alert(`請在5秒內再按 ${5 - resetClickCount} 下，才會真的重置！`);
         }
       }
-    };
+    });
 
     window.addPlayer = function () {
       const name = document.getElementById('newPlayer').value.trim();
