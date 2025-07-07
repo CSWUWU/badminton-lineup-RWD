@@ -69,11 +69,11 @@
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
     /* 刪除區固定右下角 */
     #deleteArea {
-      position: absolute;
-      left: 108px;
-      bottom: 370px;
-      width: 240px;
-      height: 100px;
+      position: fixed;
+      right: 40px;
+      bottom: 40px;
+      width: 200px;
+      height: 150px;
       background: var(--milk-tea-light);
       border: 2px dashed var(--milk-tea-brown);
       color: var(--milk-tea-dark);
@@ -83,7 +83,10 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 2000;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      padding: 12px 0 8px 0;
     }
     #deleteArea h3 {
       color: var(--milk-tea-dark);
