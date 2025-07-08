@@ -67,13 +67,13 @@
     }
     .area-controls { text-align: center; margin-top: 5px; }
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
-    /* 刪除區固定右下角（absolute） */
+    /* 刪除區右上角（absolute） */
     #deleteHitbox {
       position: absolute;
       right: 0;
-      bottom: 20;
-      width: 550px;
-      height: 650px;
+      top: 20px;
+      width: 500px;
+      height: 600px;
       z-index: 1999;
       background: transparent;
       pointer-events: auto;
@@ -81,9 +81,9 @@
     #deleteArea {
       position: absolute;
       right: 20px;
-      bottom: 20px;
+      top: 20px;
       width: 200px;
-      height: 200px;
+      height: 100px;
       background: var(--milk-tea-light);
       border: 2px dashed var(--milk-tea-brown);
       color: var(--milk-tea-dark);
@@ -132,7 +132,7 @@
     <div class="area" id="waitingB"><h3>等待順位 2</h3><div class="player-zone" id="waitingB-zone"></div></div>
     <div class="area" id="waitingC"><h3>等待順位 3</h3><div class="player-zone" id="waitingC-zone"></div></div>
   </div>
-  <!-- 刪除區固定右下角（absolute） -->
+  <!-- 刪除區右上角 -->
   <div id="deleteHitbox"></div>
   <div class="area" id="deleteArea">
     <h3><span style="font-size:18px;">🗑️</span> 刪除區</h3>
@@ -242,7 +242,6 @@
     // 刪除區
     const deleteArea = document.getElementById('deleteArea');
     const deleteZone = document.getElementById('delete-zone');
-    // 不用高亮，僅保留大 hitbox
     Sortable.create(deleteZone, {
       group: {
         name: 'players',
