@@ -67,9 +67,19 @@
     }
     .area-controls { text-align: center; margin-top: 5px; }
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
-    /* 刪除區固定右下角 */
+    /* 刪除區固定右下角（absolute） */
+    #deleteHitbox {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 320px;
+      height: 420px;
+      z-index: 1999;
+      background: transparent;
+      pointer-events: auto;
+    }
     #deleteArea {
-      position: fixed;
+      position: absolute;
       right: 40px;
       bottom: 40px;
       width: 200px;
@@ -85,26 +95,8 @@
       justify-content: center;
       z-index: 2000;
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, transform 0.2s;
       padding: 12px 0 8px 0;
-      /* 新增：讓 pointer event 可穿透 hitbox */
       overflow: visible;
-    }
-    #deleteArea::before {
-      content: "";
-      position: absolute;
-      left: -60px; top: -60px; right: -60px; bottom: -60px;
-      /* 這是實際 hitbox，透明但可感應 */
-      background: transparent;
-      z-index: 1;
-      pointer-events: auto;
-      border-radius: 30px;
-    }
-    #deleteArea.drag-over {
-      background: rgba(255,0,0,0.15);
-      border-color: #ff3333;
-      transform: scale(1.15);
-      box-shadow: 0 0 24px 4px rgba(255,0,0,0.18);
     }
     #delete-zone { min-height: 0; height: 0; overflow: hidden; }
     #deleteArea span {
@@ -140,7 +132,8 @@
     <div class="area" id="waitingB"><h3>等待順位 2</h3><div class="player-zone" id="waitingB-zone"></div></div>
     <div class="area" id="waitingC"><h3>等待順位 3</h3><div class="player-zone" id="waitingC-zone"></div></div>
   </div>
-  <!-- 刪除區固定右下角 -->
+  <!-- 刪除區固定右下角（absolute） -->
+  <div id="deleteHitbox"></div>
   <div class="area" id="deleteArea">
     <h3><span style="font-size:18px;">🗑️</span> 刪除區</h3>
     <div class="player-zone" id="delete-zone"></div>
@@ -249,6 +242,7 @@
     // 刪除區
     const deleteArea = document.getElementById('deleteArea');
     const deleteZone = document.getElementById('delete-zone');
+    // 不用高亮，僅保留大 hitbox
     Sortable.create(deleteZone, {
       group: {
         name: 'players',
@@ -256,33 +250,12 @@
         put: true
       },
       animation: 150,
-      swapThreshold: 0.98, // 靠近就算進入
-      fallbackTolerance: 30, // 容錯像素
+      swapThreshold: 0.98,
+      fallbackTolerance: 30,
       onAdd: evt => {
         evt.item.parentNode.removeChild(evt.item);
         syncToDB();
-        deleteArea.classList.remove('drag-over');
-      },
-      onEnd: () => {
-        deleteArea.classList.remove('drag-over');
       }
-    });
-    // 讓刪除區在拖曳時放大/高亮
-    areaIds.forEach(id => {
-      const zone = document.getElementById(id);
-      zone.addEventListener('dragstart', () => {
-        deleteArea.classList.add('drag-over');
-      });
-      zone.addEventListener('dragend', () => {
-        deleteArea.classList.remove('drag-over');
-      });
-    });
-    // 也支援拖曳進入/離開 deleteArea
-    deleteArea.addEventListener('dragenter', () => {
-      deleteArea.classList.add('drag-over');
-    });
-    deleteArea.addEventListener('dragleave', () => {
-      deleteArea.classList.remove('drag-over');
     });
 
     // 其他區塊
