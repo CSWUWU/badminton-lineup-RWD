@@ -85,17 +85,26 @@
       justify-content: center;
       z-index: 2000;
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
       padding: 12px 0 8px 0;
+      /* 新增：讓 pointer event 可穿透 hitbox */
+      overflow: visible;
     }
-    #deleteArea h3 {
-      color: var(--milk-tea-dark);
-      font-size: 16px;
-      margin: 0 0 2px 0;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+    #deleteArea::before {
+      content: "";
+      position: absolute;
+      left: -60px; top: -60px; right: -60px; bottom: -60px;
+      /* 這是實際 hitbox，透明但可感應 */
+      background: transparent;
+      z-index: 1;
+      pointer-events: auto;
+      border-radius: 30px;
+    }
+    #deleteArea.drag-over {
+      background: rgba(255,0,0,0.15);
+      border-color: #ff3333;
+      transform: scale(1.15);
+      box-shadow: 0 0 24px 4px rgba(255,0,0,0.18);
     }
     #delete-zone { min-height: 0; height: 0; overflow: hidden; }
     #deleteArea span {
@@ -238,18 +247,44 @@
       setInterval(fetchAll, 5000);
     }
     // 刪除區
-    Sortable.create(document.getElementById('delete-zone'), {
+    const deleteArea = document.getElementById('deleteArea');
+    const deleteZone = document.getElementById('delete-zone');
+    Sortable.create(deleteZone, {
       group: {
         name: 'players',
         pull: false,
         put: true
       },
       animation: 150,
+      swapThreshold: 0.98, // 靠近就算進入
+      fallbackTolerance: 30, // 容錯像素
       onAdd: evt => {
         evt.item.parentNode.removeChild(evt.item);
         syncToDB();
+        deleteArea.classList.remove('drag-over');
+      },
+      onEnd: () => {
+        deleteArea.classList.remove('drag-over');
       }
     });
+    // 讓刪除區在拖曳時放大/高亮
+    areaIds.forEach(id => {
+      const zone = document.getElementById(id);
+      zone.addEventListener('dragstart', () => {
+        deleteArea.classList.add('drag-over');
+      });
+      zone.addEventListener('dragend', () => {
+        deleteArea.classList.remove('drag-over');
+      });
+    });
+    // 也支援拖曳進入/離開 deleteArea
+    deleteArea.addEventListener('dragenter', () => {
+      deleteArea.classList.add('drag-over');
+    });
+    deleteArea.addEventListener('dragleave', () => {
+      deleteArea.classList.remove('drag-over');
+    });
+
     // 其他區塊
     areaIds.forEach(id => {
       Sortable.create(document.getElementById(id), {
