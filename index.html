@@ -147,6 +147,7 @@
     <div id="qrcode"></div>
     <p>即時排隊狀態</p>
   </div>
+  <!-- QRCode 產生放在 module 之前 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     new QRCode(document.getElementById("qrcode"), {
@@ -181,6 +182,33 @@
     const timers = {}, timerIntervals = {};
     let isLocalMoving = false;
     let localSyncCount = 0;
+
+    function addPlayer() {
+      const name = document.getElementById('newPlayer').value.trim();
+      if (name) {
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.textContent = name;
+        document.getElementById('bench-zone').appendChild(player);
+        document.getElementById('newPlayer').value = '';
+        syncToDB();
+      }
+    }
+    window.addPlayer = addPlayer;
+
+    function endMatch(courtId) {
+      const courtZone = document.getElementById(`${courtId}-zone`);
+      const benchZone = document.getElementById('bench-zone');
+      const waitingZones = ['waitingA-zone', 'waitingB-zone', 'waitingC-zone'].map(id => document.getElementById(id));
+      courtZone.querySelectorAll('.player').forEach(p => benchZone.appendChild(p));
+      waitingZones[0].querySelectorAll('.player').forEach(p => courtZone.appendChild(p));
+      startTimer(courtId);
+      waitingZones[1].querySelectorAll('.player').forEach(p => waitingZones[0].appendChild(p));
+      waitingZones[2].querySelectorAll('.player').forEach(p => waitingZones[1].appendChild(p));
+      waitingZones[2].innerHTML = '';
+      syncToDB();
+    }
+    window.endMatch = endMatch;
 
     function updateDOM(id, players) {
       if (isLocalMoving) return;
@@ -306,29 +334,6 @@
       }
     });
 
-    window.addPlayer = function () {
-      const name = document.getElementById('newPlayer').value.trim();
-      if (name) {
-        const player = document.createElement('div');
-        player.className = 'player';
-        player.textContent = name;
-        document.getElementById('bench-zone').appendChild(player);
-        document.getElementById('newPlayer').value = '';
-        syncToDB();
-      }
-    };
-    window.endMatch = function (courtId) {
-      const courtZone = document.getElementById(`${courtId}-zone`);
-      const benchZone = document.getElementById('bench-zone');
-      const waitingZones = ['waitingA-zone', 'waitingB-zone', 'waitingC-zone'].map(id => document.getElementById(id));
-      courtZone.querySelectorAll('.player').forEach(p => benchZone.appendChild(p));
-      waitingZones[0].querySelectorAll('.player').forEach(p => courtZone.appendChild(p));
-      startTimer(courtId);
-      waitingZones[1].querySelectorAll('.player').forEach(p => waitingZones[0].appendChild(p));
-      waitingZones[2].querySelectorAll('.player').forEach(p => waitingZones[1].appendChild(p));
-      waitingZones[2].innerHTML = '';
-      syncToDB();
-    };
     function startTimer(courtId) {
       stopTimer(courtId);
       const timerDiv = document.getElementById(`timer-${courtId}`);
