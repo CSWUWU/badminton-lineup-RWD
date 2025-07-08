@@ -19,7 +19,7 @@
       background-image: url('dogg.png');
       background-repeat: no-repeat;
       background-size: auto 100px;
-      background-position: calc(50% + 260px) bottom;
+      background-position: calc(50% + 280px) bottom;
     }
     h1 { text-align: center; color: var(--milk-tea-dark); }
     #controls { text-align: center; margin: 20px 0; }
@@ -34,15 +34,12 @@
     }
     button:hover { background-color: var(--milk-tea-dark); }
     .grid-container {
-      display: grid;
-      grid-template-columns: 250px 250px 250px 250px;
-      grid-template-rows: 300px 30px 300px;
-      column-gap: 20px; row-gap: 0;
+      display: grid; grid-template-columns: 250px 250px 250px 250px;
+      grid-template-rows: 300px 30px 300px; column-gap: 20px; row-gap: 0;
       justify-content: center; align-items: start; margin-top: 30px;
     }
     .area {
-      background: var(--milk-tea-light);
-      border: 2px dashed var(--milk-tea-brown);
+      background: var(--milk-tea-light); border: 2px dashed var(--milk-tea-brown);
       border-radius: 10px; padding: 4px; position: relative;
       box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1); display: flex;
       flex-direction: column; height: 300px;
@@ -67,42 +64,6 @@
     }
     .area-controls { text-align: center; margin-top: 5px; }
     .timer { font-size: 12px; color: var(--milk-tea-dark); text-align: right; }
-    #deleteHitbox {
-      position: absolute;
-      right: 0;
-      top: 20px;
-      width: 500px;
-      height: 600px;
-      z-index: 1999;
-      background: transparent;
-      pointer-events: auto;
-    }
-    #deleteArea {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      width: 200px;
-      height: 100px;
-      background: var(--milk-tea-light);
-      border: 2px dashed var(--milk-tea-brown);
-      color: var(--milk-tea-dark);
-      border-radius: 10px;
-      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      cursor: pointer;
-      padding: 12px 0 8px 0;
-      overflow: visible;
-    }
-    #delete-zone { min-height: 0; height: 0; overflow: hidden; }
-    #deleteArea span {
-      font-size: 12px;
-      color: var(--milk-tea-dark);
-      margin-top: 0;
-    }
     footer { text-align: center; margin-top: 40px; font-size: 14px; color: var(--milk-tea-dark); }
     .feedback { text-align: center; margin-top: 6px; font-size: 14px; color: var(--milk-tea-dark); }
     .qr-wrapper {
@@ -118,25 +79,18 @@
   <h1>早安美之程🏸</h1>
   <div id="controls">
     <input type="text" id="newPlayer" placeholder="輸入隊員名稱">
-    <button id="addPlayerBtn">新增隊員</button>
-    <button id="resetBtn">重置</button>
+    <button onclick="addPlayer()">新增隊員</button>
+    <button onclick="resetLayout()">重置</button>
   </div>
   <div class="grid-container">
     <div class="area" id="bench"><h3>休息區</h3><div class="player-zone" id="bench-zone"></div></div>
-    <div class="area" id="court1"><h3>場地 1</h3><div class="player-zone" id="court1-zone"></div><div class="area-controls"><button id="endMatch1">結束比賽</button><div class="timer" id="timer-court1"></div></div></div>
-    <div class="area" id="court2"><h3>場地 2</h3><div class="player-zone" id="court2-zone"></div><div class="area-controls"><button id="endMatch2">結束比賽</button><div class="timer" id="timer-court2"></div></div></div>
-    <div class="area" id="court3"><h3>場地 3</h3><div class="player-zone" id="court3-zone"></div><div class="area-controls"><button id="endMatch3">結束比賽</button><div class="timer" id="timer-court3"></div></div></div>
+    <div class="area" id="court1"><h3>場地 1</h3><div class="player-zone" id="court1-zone"></div><div class="area-controls"><button onclick="endMatch('court1')">結束比賽</button><div class="timer" id="timer-court1"></div></div></div>
+    <div class="area" id="court2"><h3>場地 2</h3><div class="player-zone" id="court2-zone"></div><div class="area-controls"><button onclick="endMatch('court2')">結束比賽</button><div class="timer" id="timer-court2"></div></div></div>
+    <div class="area" id="court3"><h3>場地 3</h3><div class="player-zone" id="court3-zone"></div><div class="area-controls"><button onclick="endMatch('court3')">結束比賽</button><div class="timer" id="timer-court3"></div></div></div>
     <div id="spacer1"></div><div id="spacer2"></div><div id="spacer3"></div>
     <div class="area" id="waitingA"><h3>等待順位 1</h3><div class="player-zone" id="waitingA-zone"></div></div>
     <div class="area" id="waitingB"><h3>等待順位 2</h3><div class="player-zone" id="waitingB-zone"></div></div>
     <div class="area" id="waitingC"><h3>等待順位 3</h3><div class="player-zone" id="waitingC-zone"></div></div>
-  </div>
-  <!-- 刪除區右上角 -->
-  <div id="deleteHitbox"></div>
-  <div class="area" id="deleteArea">
-    <h3><span style="font-size:18px;">🗑️</span> 刪除區</h3>
-    <div class="player-zone" id="delete-zone"></div>
-    <span>拖曳球員到此刪除</span>
   </div>
   <footer>Made by WU SIR</footer>
   <div class="feedback">
@@ -180,37 +134,6 @@
     const timers = {}, timerIntervals = {};
     let isLocalMoving = false;
     let localSyncCount = 0;
-
-    // 新增球員
-    function addPlayer() {
-      const name = document.getElementById('newPlayer').value.trim();
-      if (name) {
-        const player = document.createElement('div');
-        player.className = 'player';
-        player.textContent = name;
-        document.getElementById('bench-zone').appendChild(player);
-        document.getElementById('newPlayer').value = '';
-        syncToDB();
-      }
-    }
-    document.getElementById('addPlayerBtn').addEventListener('click', addPlayer);
-
-    // 結束比賽
-    function endMatch(courtId) {
-      const courtZone = document.getElementById(`${courtId}-zone`);
-      const benchZone = document.getElementById('bench-zone');
-      const waitingZones = ['waitingA-zone', 'waitingB-zone', 'waitingC-zone'].map(id => document.getElementById(id));
-      courtZone.querySelectorAll('.player').forEach(p => benchZone.appendChild(p));
-      waitingZones[0].querySelectorAll('.player').forEach(p => courtZone.appendChild(p));
-      startTimer(courtId);
-      waitingZones[1].querySelectorAll('.player').forEach(p => waitingZones[0].appendChild(p));
-      waitingZones[2].querySelectorAll('.player').forEach(p => waitingZones[1].appendChild(p));
-      waitingZones[2].innerHTML = '';
-      syncToDB();
-    }
-    document.getElementById('endMatch1').addEventListener('click', () => endMatch('court1'));
-    document.getElementById('endMatch2').addEventListener('click', () => endMatch('court2'));
-    document.getElementById('endMatch3').addEventListener('click', () => endMatch('court3'));
 
     function updateDOM(id, players) {
       if (isLocalMoving) return;
@@ -269,25 +192,6 @@
       fetchAll();
       setInterval(fetchAll, 5000);
     }
-    // 刪除區
-    const deleteArea = document.getElementById('deleteArea');
-    const deleteZone = document.getElementById('delete-zone');
-    Sortable.create(deleteZone, {
-      group: {
-        name: 'players',
-        pull: false,
-        put: true
-      },
-      animation: 150,
-      swapThreshold: 0.98,
-      fallbackTolerance: 30,
-      onAdd: evt => {
-        evt.item.parentNode.removeChild(evt.item);
-        syncToDB();
-      }
-    });
-
-    // 其他區塊
     areaIds.forEach(id => {
       Sortable.create(document.getElementById(id), {
         group: {
@@ -312,30 +216,33 @@
         }
       });
     });
-
-    // 重置必須10秒內連按3下
-    let resetClickCount = 0;
-    let resetClickTimer = null;
-    document.getElementById('resetBtn').addEventListener('click', function () {
-      resetClickCount++;
-      if (resetClickCount === 1) {
-        resetClickTimer = setTimeout(() => {
-          resetClickCount = 0;
-        }, 10000); // 10秒
-      }
-      if (resetClickCount >= 3) {
-        clearTimeout(resetClickTimer);
-        resetClickCount = 0;
-        areaIds.forEach(id => document.getElementById(id).innerHTML = '');
+    window.addPlayer = function () {
+      const name = document.getElementById('newPlayer').value.trim();
+      if (name) {
+        const player = document.createElement('div');
+        player.className = 'player';
+        player.textContent = name;
+        document.getElementById('bench-zone').appendChild(player);
+        document.getElementById('newPlayer').value = '';
         syncToDB();
-        alert("已重置！");
-      } else {
-        if (resetClickCount > 1) {
-          alert(`請在10秒內再按 ${3 - resetClickCount} 下，才會真的重置！`);
-        }
       }
-    });
-
+    };
+    window.resetLayout = function () {
+      areaIds.forEach(id => document.getElementById(id).innerHTML = '');
+      syncToDB();
+    };
+    window.endMatch = function (courtId) {
+      const courtZone = document.getElementById(`${courtId}-zone`);
+      const benchZone = document.getElementById('bench-zone');
+      const waitingZones = ['waitingA-zone', 'waitingB-zone', 'waitingC-zone'].map(id => document.getElementById(id));
+      courtZone.querySelectorAll('.player').forEach(p => benchZone.appendChild(p));
+      waitingZones[0].querySelectorAll('.player').forEach(p => courtZone.appendChild(p));
+      startTimer(courtId);
+      waitingZones[1].querySelectorAll('.player').forEach(p => waitingZones[0].appendChild(p));
+      waitingZones[2].querySelectorAll('.player').forEach(p => waitingZones[1].appendChild(p));
+      waitingZones[2].innerHTML = '';
+      syncToDB();
+    };
     function startTimer(courtId) {
       stopTimer(courtId);
       const timerDiv = document.getElementById(`timer-${courtId}`);
